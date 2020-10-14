@@ -9,15 +9,14 @@ EllipticCurve::EllipticCurve(int a, int b)
 
     std::stringstream ss;
 
-    ss << "y^2 = x^3 + " << a << "x + " << b;
+    ss << "y^2 = x^3 + " << a << "x + " << b << "\n";
     curveStr = ss.str(); 
 
     if (!isSmooth())
     {
-        ss.str("");
-        ss << "The curve " << curveStr << " is not smooth!"; 
+        string message = "The curve " + curveStr + " is not smooth!"; 
 
-        throw ss.str();     
+        throw message;     
     }
 }
 
@@ -34,6 +33,11 @@ bool EllipticCurve::testPoint (int x, int y)
 void EllipticCurve::printCurve ()
 {
     std::cout << curveStr;
+}
+
+string EllipticCurve::getCurveStr ()
+{
+    return curveStr;
 }
 
 /*class EllipticCurve

@@ -18,9 +18,9 @@ class EllipticCurve
         EllipticCurve(int a, int b);
         bool testPoint(int x, int y); 
         void printCurve();
+        string getCurveStr();
 
     bool isSmooth(); 
-
 };
 
 #endif
