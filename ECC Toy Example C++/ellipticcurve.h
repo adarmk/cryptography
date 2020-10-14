@@ -10,15 +10,17 @@ using namespace std;
 class EllipticCurve
 {
     string curveStr;
-    int a;
-    int b;
-    int discriminant;
+    double a;
+    double b;
+    double discriminant;
 
     public:
-        EllipticCurve(int a, int b);
-        bool testPoint(int x, int y); 
+        EllipticCurve(double a, double b);
+        bool testPoint(double x, double y); 
         void printCurve();
         string getCurveStr();
+        double getA();
+
 
     bool isSmooth(); 
 };

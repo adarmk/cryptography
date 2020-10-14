@@ -10,7 +10,7 @@ string IdealPoint::printPoint ()
     return "Ideal";
 }
 
-void IdealPoint::operator-()
+Point IdealPoint::operator-()
 {
-
+    return IdealPoint(curve);
 }
