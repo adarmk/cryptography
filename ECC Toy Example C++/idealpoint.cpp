@@ -1,16 +1,15 @@
-#include "idealpoint.h"
-
+/* #include "idealpoint.h"
 
 IdealPoint::IdealPoint (EllipticCurve curve): Point(curve), curve(curve)
 {
 }
 
-string IdealPoint::printPoint ()
+string IdealPoint::getPointStr ()
 {
     return "Ideal";
 }
 
-Point IdealPoint::operator-()
+IdealPoint IdealPoint::operator-()
 {
     return IdealPoint(curve);
-}
+}*/
