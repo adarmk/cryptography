@@ -23,6 +23,10 @@ Point::Point(EllipticCurve curve): curve(curve)
     isIdeal = true;
 }
 
+EllipticCurve Point::getCurve()
+{
+    return curve;
+}
 
 string Point::getPointStr()
 {
@@ -34,7 +38,7 @@ string Point::getPointStr()
 
 
 //Group operations
-Point Point::operator-()
+inline Point Point::operator-()
 {
     if (!isIdeal)
     {
@@ -87,8 +91,43 @@ Point Point::operator+(Point& point)
         double x_3 = m*m - x_2 - x_1; //Following Vieta's formula, given roots of the polynomial x_i,  x_1 + x_2 + x_3 = -a_2 / a_1. We know that a_1 = 1, a_2 = m^2, and we know the values of x_1 and x_2, so we solve for x_3. 
         double y_3 = m*(x_3 - x_1) + y_1;
 
-        return Point(x_3, y_3, curve);
+        return Point(x_3, -y_3, curve);
     }
 }
 
 
+Point Point::operator-(Point& point)
+{
+    Point negPoint = -point;
+    return *this + negPoint;
+}
+
+Point Point::operator*(int n)
+{
+    Point point = -*this;
+
+    if (n<0)
+    {
+        
+        return point * -n; //Returns the negative of the curve added to itself |n| times
+    }
+    else if (n == 0)
+    {
+        return Point(curve); //returns the ideal point
+    }
+    else //The algorithm here adds points more 
+    {
+        Point pointToAdd = point; 
+        Point sum = (n & 1) == 1 ? point : Point(curve);
+
+        while(n >= 0)
+        {
+            n = n >> 1;
+            pointToAdd = pointToAdd + pointToAdd; 
+
+            if ((n & 1) == 1)
+                sum = sum + pointToAdd; 
+        }
+        return sum;
+    }
+}
