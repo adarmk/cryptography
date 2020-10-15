@@ -104,12 +104,11 @@ Point Point::operator-(Point& point)
 
 Point Point::operator*(int n)
 {
-    Point point = -*this;
+    Point point = *this;
 
     if (n<0)
     {
-        
-        return point * -n; //Returns the negative of the curve added to itself |n| times
+        return -point * -n; //Returns the negative of the curve added to itself |n| times
     }
     else if (n == 0)
     {
@@ -120,7 +119,7 @@ Point Point::operator*(int n)
         Point pointToAdd = point; 
         Point sum = (n & 1) == 1 ? point : Point(curve);
 
-        while(n >= 0)
+        while(n > 0)
         {
             n = n >> 1;
             pointToAdd = pointToAdd + pointToAdd; 
