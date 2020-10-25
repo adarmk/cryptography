@@ -13,7 +13,7 @@ Point::Point(double x, double y, EllipticCurve curve): curve(curve)
         
         string message = "The point (" + to_string(x) + ", " + to_string(y) + ")" + " is not on the given curve."; 
 
-        throw std::invalid_argument( message);
+        //throw std::invalid_argument( message);
     } 
 }
 
@@ -88,7 +88,7 @@ Point Point::operator+(Point& point)
             m = (y_2 - y_1)/(x_2 - x_1);
         }
 
-        double x_3 = m*m - x_2 - x_1; //Following Vieta's formula, given roots of the polynomial x_i,  x_1 + x_2 + x_3 = -a_2 / a_1. We know that a_1 = 1, a_2 = m^2, and we know the values of x_1 and x_2, so we solve for x_3. 
+        double x_3 = m*m - x_2 - x_1; //Following Vieta's formula, given roots x_i of the polynomial,  x_1 + x_2 + x_3 = -a_2 / a_1. We know that a_1 = 1, a_2 = m^2, and we know the values of x_1 and x_2, so we solve for x_3. 
         double y_3 = m*(x_3 - x_1) + y_1;
 
         return Point(x_3, -y_3, curve);
@@ -114,7 +114,7 @@ Point Point::operator*(int n)
     {
         return Point(curve); //returns the ideal point
     }
-    else //The algorithm here adds points more 
+    else //The algorithm here adds points together more efficiently. 
     {
         Point pointToAdd = point; 
         Point sum = (n & 1) == 1 ? point : Point(curve);
