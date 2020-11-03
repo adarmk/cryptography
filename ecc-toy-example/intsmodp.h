@@ -7,6 +7,8 @@ class IntsModP
 {
     int p;
 
+    void extendedEuclideanAlgorithm(int a, int b, int *x, int *y, int *gcd);
+    
     public: 
         IntsModP(int p);
         int mod(int num);
@@ -17,8 +19,6 @@ class IntsModP
         int negate(int num1, int num2);
         int mulInv(int num);
         bool isEqual(int num1, int num2);
-
-        
 };
 
 
