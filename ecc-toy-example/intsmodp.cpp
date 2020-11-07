@@ -1,5 +1,5 @@
 #include "intsmodp.h"
-
+#include <cmath>
 
 IntsModP::IntsModP(int p) {
     this->p = p;
@@ -52,9 +52,9 @@ void IntsModP::extendedEuclideanAlgorithm(int a, int b, int *s, int *t, int *gcd
 {
 
     //a must be larger than b for this algorithm to work, so if that's not the case we just switch them
-    if (abs(b) > abs(a))
+    if (std::abs(b) > std::abs(a))
     {
-        extendedEuclideanAlgorithm(b, a, x, y, gcd);
+        extendedEuclideanAlgorithm(b, a, s, t, gcd);
     }
     else 
     {
@@ -105,3 +105,4 @@ void IntsModP::extendedEuclideanAlgorithm(int a, int b, int *s, int *t, int *gcd
         }
     }
 }
+

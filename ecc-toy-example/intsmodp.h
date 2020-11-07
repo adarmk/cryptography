@@ -1,14 +1,13 @@
 #ifndef INTS_MOD_P
 #define INTS_MOD_P
 
-using namespace std;
 
 class IntsModP 
 {
     int p;
 
     void extendedEuclideanAlgorithm(int a, int b, int *x, int *y, int *gcd);
-    
+
     public: 
         IntsModP(int p);
         int mod(int num);
