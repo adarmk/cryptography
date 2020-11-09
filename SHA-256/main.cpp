@@ -1,15 +1,18 @@
 #include <iostream>
 #include <string>
+#include "sha256.h"
 
 using namespace std;
 
 int main()
 {
-    string hi = "Hello";
+    Sha256 sha;
+    //long rotated21 = sha.rightRotate(21, 3);
+    string hello = "Hello";
+    char const *c = hello.c_str();
+    
+    cout << hello.c_str();
 
-    char n = hi[3];
-
-    cout << n;
     return 0;
 }
 
