@@ -1,18 +1,21 @@
 // Author: Adar Kahiri
-// Reference: http://www.iwar.org.uk/comsec/resources/cipher/sha256-384-512.pdf
+// Reference: https://csrc.nist.gov/csrc/media/publications/fips/180/2/archive/2002-08-01/documents/fips180-2.pdf
 
 #ifndef SHA256_H
 #define SHA256_H
 
 #include <string>
 #include <cmath>
+#include <sstream>
+#include <iostream>
+#include <iomanip>
 
 using namespace std;
 
 class Sha256 
 {
-    const int CHAR_BIT_LEN = 8;
-    const int INT_BITS = 32;
+    static const int CHAR_BIT_LEN = 8;
+    static const int INT_BITS = 32;
 
 
     public: 
@@ -20,13 +23,15 @@ class Sha256
         int rightRotate(int x, unsigned int n);
 
     //Auxiliary functions
-    int ch(int x, int y, int z);
-    int maj(int x, int y, int z);
-    int bigSigma0(int x);
-    int bigSigma1(int x);
-    int sigma0(int x);
-    int sigma1(int x);
-    int hexToInt(string hex);
+    private: 
+        int add(int x, int y);
+        int ch(int x, int y, int z);
+        int maj(int x, int y, int z);
+        int bigSigma0(int x);
+        int bigSigma1(int x);
+        int sigma0(int x);
+        int sigma1(int x);
+        int hexToInt(string hex);
 };
 
 

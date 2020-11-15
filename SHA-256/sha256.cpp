@@ -1,36 +1,59 @@
 // Author: Adar Kahiri
-// Reference: http://www.iwar.org.uk/comsec/resources/cipher/sha256-384-512.pdf
+// Reference: https://csrc.nist.gov/csrc/media/publications/fips/180/2/archive/2002-08-01/documents/fips180-2.pdf
 
 #include "sha256.h"
 
 string Sha256::hash(string message) 
 {
-    string hash = "dd"; 
-    string initialHashes[8] = {"6a09e667", "bb67ae85", "3c6ef372", "a54ff53a", "510e527f", "9b05688c", "1f83d9ab", "5be0cd19"};
+    stringstream ss;
 
-    int msgBitLen = message.length() * CHAR_BIT_LEN; // Number of chars in message times number of bits in char
-    int padLength = (448 - (msgBitLen + 1) % 512 + 512) % 512;  //The goal is to find the smallest positive k such that  bitLength + 1 + k = 448 (mod 512)
-    int numBlocks = (msgBitLen + 1 + padLength + 64) / 512; //Each block is 512 bits, so dividing the padded message  by 512 gives the number of blocks
+    static const uint32_t initialHashes[9] = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
 
-    int **messageBlocks;    //Each block is separated into 32-bit chunks. 512 / 32 = 16.
+    static const uint32_t K[64] = {
+        0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
+        0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+        0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
+        0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+        0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,
+        0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+        0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,
+        0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+        0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
+        0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+        0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3,
+        0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+        0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
+        0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+        0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
+        0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+    };
 
-    messageBlocks = new int*[numBlocks];
+    uint32_t msgBitLen = message.length() * CHAR_BIT_LEN; // Number of chars in message times number of bits in char
+    uint32_t padLength = (448 - (msgBitLen + 1) % 512 + 512) % 512;  //The goal is to find the smallest positive k such that  bitLength + 1 + k = 448 (mod 512)
+    uint32_t numBlocks = (msgBitLen + 1 + padLength + 64) / 512; //Each block is 512 bits, so dividing the padded message  by 512 gives the number of blocks
+
+    uint32_t **messageBlocks;    //Each block is separated into 32-bit chunks. 512 / 32 = 16.
+
+
+    messageBlocks = new uint32_t*[numBlocks];
+
 
     for (int i = 0; i < numBlocks; i++)
     {
-        messageBlocks[i] = new int[16];
+        messageBlocks[i] = new uint32_t[16];
     }
+
 
     //Initializing all array values to zero.
     for (int i = 0; i < numBlocks; i++)
     {
-        for (int j = 0; i < 16; i++)
+        for (int j = 0; j < 16; j++)
         {
             messageBlocks[i][j] = 0;
         }
     }
 
-    //Preprocessing 
+    // ************** PREPROCESSING ************* 
 
     //Adding message to the array character by character
     for (int i = 0; i < message.length(); i++)
@@ -47,13 +70,78 @@ string Sha256::hash(string message)
     messageBlocks[nextBlock][nextSection] <<= 1;
     messageBlocks[nextBlock][nextSection] += 1;
 
-
     //Appending the message length to the end 
     messageBlocks[numBlocks - 1][15] += msgBitLen;
 
-    return hash;
+
+
+
+    // ************** Hash computation ************* 
+    uint32_t workingVars[8]; //working variables (a, b, c, ..., f)
+    uint32_t hashes[8]; //
+    uint32_t W[64]; //Message schedule
+    uint32_t T_1, T_2; //Temporary words
+
+    //Setting hashes to initial hashes
+    for (int i = 0; i < 8; i++)
+    {
+        hashes[i] = initialHashes[i];
+    }
+
+    for (int i = 0; i < numBlocks; i++)
+    {
+        //Preparing first 16 words in the message schedule
+        for(int t = 0; t < 16; t++)
+        {
+            W[t] = messageBlocks[i][t];
+        }
+
+        //Preparing the other 48 words in the message schedule
+        for(int t = 16; t < 64; t++)
+        {
+            W[t] = add(sigma1(W[t-2]), add(sigma0(W[t-15]), W[t-16]));
+        }
+
+        //Initializing the 8 working variables
+        for(int j = 0; j < 8; j++)
+        {
+            workingVars[i] = initialHashes[i];
+        }
+
+
+        for(int t = 0; t < 64; t++)
+        {
+            T_1 = add(workingVars[7], add(bigSigma1(workingVars[4]), add(ch(workingVars[4], workingVars[5], workingVars[6]), add(K[t], W[t]))));
+            T_2 = add(bigSigma0(workingVars[0]), maj(workingVars[0], workingVars[1], workingVars[2]));
+
+            for(int i = sizeof(workingVars)/sizeof(workingVars[0]) - 1; i > 0; i--)
+            {
+                workingVars[i] = workingVars[i-1];
+            }
+
+            workingVars[0] = add(T_1, T_2);
+        }
+
+        for(int j = 0; j < sizeof(hashes)/sizeof(hashes[0]); j++)
+        {
+            hashes[j] = add(workingVars[j], hashes[j]);
+        }
+    }
+
+    for(int i = 0; i < sizeof(hashes)/sizeof(hashes[0]); i++)
+    {   
+        ss << hex << hashes[i];
+    }
+
+    delete[] messageBlocks;
+    return ss.str();
 }
 
+inline int Sha256::add(int x, int y)
+{
+    //Addition modulo 2^32
+    return (x + y) % 4294967296;
+}
 
 inline int Sha256::ch(int x, int y, int z) 
 {
@@ -67,47 +155,25 @@ inline int Sha256::maj(int x, int y, int z)
 
 inline int Sha256::bigSigma0(int x)
 {
-    return x;
+    return rightRotate(x, 2) ^ rightRotate(x, 13) ^ rightRotate(x, 22);
 }
 
 inline int Sha256::bigSigma1(int x)
 {
-    return x;
+    return rightRotate(x, 6) ^ rightRotate(x, 11) ^ rightRotate(x, 25);
 }
 
 inline int Sha256::sigma0(int x)
 {
-    return x;
+    return rightRotate(x, 7) ^ rightRotate(x, 18) ^ rightRotate(x, 3);
 }
 
 inline int Sha256::sigma1(int x)
 {
-    return x;
+    return rightRotate(x, 17) ^ rightRotate(x, 19) ^ rightRotate(x, 10);
 }
 
 inline int Sha256::rightRotate(int x, unsigned int n)
 {
-    //right-shifting n times means the last n bits are deleted, and there are now n zeros where the first n digits used to be. 
     return (x >> n) | (x << (INT_BITS - n));
-}
-
-int Sha256::hexToInt(string hex)
-{
-    int intRep = 0;
-    int currentDigit;
-    for(int i = hex.length() - 1; i >= 0; i--)
-    {
-        if(hex[i] >= '0' && hex[i] <= '9')
-        {
-            currentDigit = hex[i] - '0';
-        }
-        else 
-        {
-            currentDigit = hex[i] - 87; //Subtracting 87 since 'a' - 87  = 10, 'b' - 87 = 11, ..., 'f' - 87 = 16
-        }
-
-        intRep += (int) currentDigit * pow(16, (hex.length() - i - 1));
-    }
-
-    return  intRep;
 }
