@@ -40,18 +40,16 @@ string Sha256::hash(string message)
     }
 
     //Getting next block and next section of the block
-    int nextBlock = msgBitLen % 512 == 0 ? i * CHAR_BIT_LEN/512 + 1 : i * CHAR_BIT_LEN/512;
-    int nextSection = msgBitLen % 32 == 0 ? (i * CHAR_BIT_LEN/16 + 1) % 16 : CHAR_BIT_LEN/16;
+    int nextBlock = msgBitLen % 512 == 0 ? msgBitLen/512 : (msgBitLen - 1)/512;
+    int nextSection = msgBitLen % 32 == 0 ? (msgBitLen/16) % 16 : (msgBitLen - 1)/16;
 
-    //2. Padding the string
+    //2. Padding the string with a 1. Since all array values have already been set to zero, the remaining 'padding' zeroes are already there. All that is left to add is the message length.
     messageBlocks[nextBlock][nextSection] <<= 1;
     messageBlocks[nextBlock][nextSection] += 1;
-    
-    processedMessage <<= 1;
-    processedMessage += 1;
 
-    
 
+    //Appending the message length to the end 
+    messageBlocks[numBlocks - 1][15] += msgBitLen;
 
     return hash;
 }
@@ -90,5 +88,26 @@ inline int Sha256::sigma1(int x)
 inline int Sha256::rightRotate(int x, unsigned int n)
 {
     //right-shifting n times means the last n bits are deleted, and there are now n zeros where the first n digits used to be. 
-    return (x >> n) | (x << (LONG_BITS - n));
+    return (x >> n) | (x << (INT_BITS - n));
+}
+
+int Sha256::hexToInt(string hex)
+{
+    int intRep = 0;
+    int currentDigit;
+    for(int i = hex.length() - 1; i >= 0; i--)
+    {
+        if(hex[i] >= '0' && hex[i] <= '9')
+        {
+            currentDigit = hex[i] - '0';
+        }
+        else 
+        {
+            currentDigit = hex[i] - 87; //Subtracting 87 since 'a' - 87  = 10, 'b' - 87 = 11, ..., 'f' - 87 = 16
+        }
+
+        intRep += (int) currentDigit * pow(16, (hex.length() - i - 1));
+    }
+
+    return  intRep;
 }

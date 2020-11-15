@@ -7,11 +7,11 @@ using namespace std;
 int main()
 {
     Sha256 sha;
-    //long rotated21 = sha.rightRotate(21, 3);
-    string hello = "Hello";
-    char const *c = hello.c_str();
-    
-    cout << hello.c_str();
+
+    cout << sha.hexToInt("100") << endl;
+    cout << sha.hexToInt("a") << endl;
+    cout << sha.hexToInt("f") << endl;
+    cout << sha.hexToInt("6a09e667") << endl;
 
     return 0;
 }

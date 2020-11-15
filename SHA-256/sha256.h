@@ -5,13 +5,14 @@
 #define SHA256_H
 
 #include <string>
+#include <cmath>
 
 using namespace std;
 
 class Sha256 
 {
     const int CHAR_BIT_LEN = 8;
-    const int LONG_BITS = 32;
+    const int INT_BITS = 32;
 
 
     public: 
@@ -25,6 +26,7 @@ class Sha256
     int bigSigma1(int x);
     int sigma0(int x);
     int sigma1(int x);
+    int hexToInt(string hex);
 };
 
 
