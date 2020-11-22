@@ -105,12 +105,10 @@ string Sha256::hash(string message)
         for(int j = 0; j < 8; j++)
         {
             workingVars[j] = hashes[j];
-
         }
 
         for(int t = 0; t < 64; t++)
         {
-            
             T_1 = workingVars[7] + bigSigma1(workingVars[4]) + ch(workingVars[4], workingVars[5], workingVars[6]) + K[t] + W[t];
             T_2 = bigSigma0(workingVars[0]) + maj(workingVars[0], workingVars[1], workingVars[2]);
 
