@@ -1,6 +1,6 @@
 ## How to use it
 
-This is a C++ implementation of the SHA-256 hash function. To use it, clone the repository, navigate to ``cryptography/SHA-256`` in terminal, and to enter 
+This is a C++ implementation of the SHA-256 hash function. To use it, clone the repository, navigate to ``cryptography/SHA-256`` in terminal, and enter 
 
 ``./hash "string"``
 
