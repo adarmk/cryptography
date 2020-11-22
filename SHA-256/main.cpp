@@ -5,13 +5,18 @@
 
 using namespace std;
 
-int main()
+int main(int argc, char ** argv)
 {
     
     Sha256 sha;
+    string hashed;
     
-    string hashed = sha.hash("abc");
-    cout << hashed << endl << hashed.length();
+    for(int i = 1; i < argc; i++)
+    {
+        hashed = sha.hash(argv[i]);
+        cout << hashed << endl;     
+    }
+    
 
     return 0;
 }

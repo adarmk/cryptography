@@ -122,17 +122,6 @@ string Sha256::hash(string message)
             workingVars[2] = workingVars[1];
             workingVars[1] = workingVars[0];
             workingVars[0] = T_1 + T_2;
-
-            if(t < 30)
-            {
-                cout << t << ": ";
-
-                for(int p = 0; p < 8; p++)
-                {
-                    cout << setfill('0') << setw(8) << hex << workingVars[p] << " ";
-                }
-                cout << endl;
-            }
         }
 
         for(int j = 0; j < sizeof(hashes)/sizeof(hashes[0]); j++)
