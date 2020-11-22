@@ -9,6 +9,7 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <bitset>
 
 using namespace std;
 
@@ -20,18 +21,15 @@ class Sha256
 
     public: 
         string hash(string message);
-        int rightRotate(int x, unsigned int n);
-
-    //Auxiliary functions
-    private: 
-        int add(int x, int y);
-        int ch(int x, int y, int z);
-        int maj(int x, int y, int z);
-        int bigSigma0(int x);
-        int bigSigma1(int x);
-        int sigma0(int x);
-        int sigma1(int x);
-        int hexToInt(string hex);
+        uint32_t rightRotate(uint32_t x, uint32_t n);
+        uint32_t add(uint32_t x, uint32_t y);
+        uint32_t ch(uint32_t x, uint32_t y, uint32_t z);
+        uint32_t maj(uint32_t x, uint32_t y, uint32_t z);
+        uint32_t bigSigma0(uint32_t x);
+        uint32_t bigSigma1(uint32_t x);
+        uint32_t sigma0(uint32_t x);
+        uint32_t sigma1(uint32_t x);
+        uint32_t hexToInt(string hex);
 };
 
 

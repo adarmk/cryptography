@@ -7,7 +7,7 @@ string Sha256::hash(string message)
 {
     stringstream ss;
 
-    static const uint32_t initialHashes[9] = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
+    static const uint32_t initialHashes[8] = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
 
     static const uint32_t K[64] = {
         0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
@@ -34,9 +34,7 @@ string Sha256::hash(string message)
 
     uint32_t **messageBlocks;    //Each block is separated into 32-bit chunks. 512 / 32 = 16.
 
-
     messageBlocks = new uint32_t*[numBlocks];
-
 
     for (int i = 0; i < numBlocks; i++)
     {
@@ -58,27 +56,28 @@ string Sha256::hash(string message)
     //Adding message to the array character by character
     for (int i = 0; i < message.length(); i++)
     {
-        messageBlocks[i * CHAR_BIT_LEN/512][i * CHAR_BIT_LEN/16] <<= CHAR_BIT_LEN;
-        messageBlocks[i * CHAR_BIT_LEN/512][i * CHAR_BIT_LEN/16] += message[i];
+        messageBlocks[i*CHAR_BIT_LEN/512][(i*CHAR_BIT_LEN/32) % 16] <<= CHAR_BIT_LEN;
+        messageBlocks[i*CHAR_BIT_LEN/512][(i*CHAR_BIT_LEN/32) % 16] += message[i];
     }
 
     //Getting next block and next section of the block
     int nextBlock = msgBitLen % 512 == 0 ? msgBitLen/512 : (msgBitLen - 1)/512;
-    int nextSection = msgBitLen % 32 == 0 ? (msgBitLen/16) % 16 : (msgBitLen - 1)/16;
+    int nextSection = msgBitLen % 32 == 0 ? (msgBitLen/32) % 16 : ((msgBitLen - 1)/32) % 16;
 
     //2. Padding the string with a 1. Since all array values have already been set to zero, the remaining 'padding' zeroes are already there. All that is left to add is the message length.
     messageBlocks[nextBlock][nextSection] <<= 1;
     messageBlocks[nextBlock][nextSection] += 1;
 
+    //Shifting the last few characters of the string so that they end up at the "front" of the word they're in.
+    messageBlocks[nextBlock][nextSection] <<= (32 - (msgBitLen % 32) - 1);
+
     //Appending the message length to the end 
     messageBlocks[numBlocks - 1][15] += msgBitLen;
 
 
-
-
     // ************** Hash computation ************* 
     uint32_t workingVars[8]; //working variables (a, b, c, ..., f)
-    uint32_t hashes[8]; //
+    uint32_t hashes[8]; //Array to store the hashes that will be updated in each iteration, and eventually store the final hashes
     uint32_t W[64]; //Message schedule
     uint32_t T_1, T_2; //Temporary words
 
@@ -99,81 +98,89 @@ string Sha256::hash(string message)
         //Preparing the other 48 words in the message schedule
         for(int t = 16; t < 64; t++)
         {
-            W[t] = add(sigma1(W[t-2]), add(sigma0(W[t-15]), W[t-16]));
+            W[t] = sigma1(W[t-2]) + W[t-7] + sigma0(W[t-15]) + W[t-16];
         }
 
         //Initializing the 8 working variables
         for(int j = 0; j < 8; j++)
         {
-            workingVars[i] = initialHashes[i];
-        }
+            workingVars[j] = hashes[j];
 
+        }
 
         for(int t = 0; t < 64; t++)
         {
-            T_1 = add(workingVars[7], add(bigSigma1(workingVars[4]), add(ch(workingVars[4], workingVars[5], workingVars[6]), add(K[t], W[t]))));
-            T_2 = add(bigSigma0(workingVars[0]), maj(workingVars[0], workingVars[1], workingVars[2]));
+            
+            T_1 = workingVars[7] + bigSigma1(workingVars[4]) + ch(workingVars[4], workingVars[5], workingVars[6]) + K[t] + W[t];
+            T_2 = bigSigma0(workingVars[0]) + maj(workingVars[0], workingVars[1], workingVars[2]);
 
-            for(int i = sizeof(workingVars)/sizeof(workingVars[0]) - 1; i > 0; i--)
+            workingVars[7] = workingVars[6];
+            workingVars[6] = workingVars[5];
+            workingVars[5] = workingVars[4];
+            workingVars[4] = workingVars[3] + T_1;
+            workingVars[3] = workingVars[2];
+            workingVars[2] = workingVars[1];
+            workingVars[1] = workingVars[0];
+            workingVars[0] = T_1 + T_2;
+
+            if(t < 30)
             {
-                workingVars[i] = workingVars[i-1];
-            }
+                cout << t << ": ";
 
-            workingVars[0] = add(T_1, T_2);
+                for(int p = 0; p < 8; p++)
+                {
+                    cout << setfill('0') << setw(8) << hex << workingVars[p] << " ";
+                }
+                cout << endl;
+            }
         }
 
         for(int j = 0; j < sizeof(hashes)/sizeof(hashes[0]); j++)
         {
-            hashes[j] = add(workingVars[j], hashes[j]);
+            hashes[j] = workingVars[j] + hashes[j];
         }
     }
 
     for(int i = 0; i < sizeof(hashes)/sizeof(hashes[0]); i++)
     {   
-        ss << hex << hashes[i];
+        ss << setfill('0') << setw(8) << hex << hashes[i];
     }
 
     delete[] messageBlocks;
     return ss.str();
 }
 
-inline int Sha256::add(int x, int y)
-{
-    //Addition modulo 2^32
-    return (x + y) % 4294967296;
-}
-
-inline int Sha256::ch(int x, int y, int z) 
+inline uint32_t Sha256::ch(uint32_t x, uint32_t y, uint32_t z) 
 {
     return (x & y) ^ (~x & z);
 }
 
-inline int Sha256::maj(int x, int y, int z)
+inline uint32_t Sha256::maj(uint32_t x, uint32_t y, uint32_t z)
 {
     return (x & y) ^ (x & z) ^ (y & z);
 }
 
-inline int Sha256::bigSigma0(int x)
+inline uint32_t Sha256::bigSigma0(uint32_t x)
 {
     return rightRotate(x, 2) ^ rightRotate(x, 13) ^ rightRotate(x, 22);
 }
 
-inline int Sha256::bigSigma1(int x)
+inline uint32_t Sha256::bigSigma1(uint32_t x)
 {
     return rightRotate(x, 6) ^ rightRotate(x, 11) ^ rightRotate(x, 25);
 }
 
-inline int Sha256::sigma0(int x)
+inline uint32_t Sha256::sigma0(uint32_t x)
 {
-    return rightRotate(x, 7) ^ rightRotate(x, 18) ^ rightRotate(x, 3);
+    return rightRotate(x, 7) ^ rightRotate(x, 18) ^ (x >> 3);
 }
 
-inline int Sha256::sigma1(int x)
+inline uint32_t Sha256::sigma1(uint32_t x)
 {
-    return rightRotate(x, 17) ^ rightRotate(x, 19) ^ rightRotate(x, 10);
+    return rightRotate(x, 17) ^ rightRotate(x, 19) ^ (x >> 10);
 }
 
-inline int Sha256::rightRotate(int x, unsigned int n)
+inline uint32_t Sha256::rightRotate(uint32_t x, uint32_t n)
 {
-    return (x >> n) | (x << (INT_BITS - n));
+    return (x >> n) | (x << (32 - n));
 }
